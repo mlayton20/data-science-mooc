@@ -18,23 +18,21 @@ run_analysis <- function() {
     comp_y <- rbind(test_y,train_y)
     rm(test_y,train_y)
     
-    #Calculate mean and std for test_x
-    test_x <- read.table("./getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/test/X_test.txt")
-    mtest_x <- rowMeans(test_x)
-    stest_x <- apply(test_x,1,sd)
-    summary_test_x <- data.frame(Mean=mtest_x,StandardDeviation=stest_x)
-    rm(test_x,mtest_x,stest_x)
+    #Read the features so we can label the X file with correct column names.
+    features_labels <- read.table("./getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/features.txt", sep = " ")
     
-    #Calculate mean and std for train_x
-    train_x <- read.table("./getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/train/X_train.txt")
-    mtrain_x <- rowMeans(train_x)
-    strain_x <- apply(train_x,1,sd)
-    summary_train_x <- data.frame(Mean=mtrain_x,StandardDeviation=strain_x)
-    rm(train_x,mtrain_x,strain_x)
+    #rbind test/X_test.txt with train/X_test.txt
+    test_x <- read.table("./getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/test/X_test.txt", col.names = features_labels[,2])
+    train_x <- read.table("./getdata-projectfiles-UCI HAR Dataset/UCI HAR Dataset/train/X_train.txt", col.names = features_labels[,2])
+    comp_x <- rbind(test_x,train_x)
+    rm(test_x,train_x)
     
-    #Join the two sets together
-    comp_measures <- rbind(summary_test_x,summary_train_x)
-    rm(summary_test_x,summary_train_x)
+    #find the mean and std columns to extract
+    meanCols <- features_labels[grepl(".*mean\\(\\)",features_labels$V2),1]
+    stdCols <- features_labels[grepl(".*std\\(\\)",features_labels$V2),1]
+    
+    #Extract columns for mean and std only
+    comp_measures <- comp_x[,rbind(meanCols,stdCols)]
     
     #cbind y to subject and to measure
     measurement_data <- cbind(comp_y,comp_subject,comp_measures)
@@ -47,4 +45,6 @@ run_analysis <- function() {
     aggregate_data <- aggregate(. ~ SubjectID+Activity+ActivityID, data = measurement_data,FUN = mean)
     aggregate_data <- aggregate_data[order(aggregate_data$SubjectID,aggregate_data$ActivityID),]
     aggregate_data
+    str(aggregate_data)
+
 }
