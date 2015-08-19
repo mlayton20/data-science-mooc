@@ -45,6 +45,4 @@ run_analysis <- function() {
     aggregate_data <- aggregate(. ~ SubjectID+Activity+ActivityID, data = measurement_data,FUN = mean)
     aggregate_data <- aggregate_data[order(aggregate_data$SubjectID,aggregate_data$ActivityID),]
     aggregate_data
-    str(aggregate_data)
-
 }
